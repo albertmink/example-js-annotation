@@ -1,0 +1,33 @@
+name: Annotate ESLint Suggestions
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  eslint-annotations:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v2
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '14'
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Run ESLint
+      run: npm run lint -- --format json --output-file eslint-report.json
+
+    - name: Annotate PR
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_REPOSITORY: ${{ github.repository }}
+        GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
+        GITHUB_PULL_REQUEST_NUMBER: ${{ github.event.pull_request.number }}
+        GITHUB_SHA: ${{ github.sha }}
+      run: node annotation-script.js
